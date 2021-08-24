@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Exec=/home/jetbot/Desktop/Angaad1/stab.sh
+Name=Angaad robot
+GenericName=Angaad robot
+Comment=Connect to My Server
+Encoding=UTF-8
+Terminal=true
+Type=Application
+Categories=Application;Network;
+Icon=/home/jetbot/Desktop/Angaad1/shortcut/download.png
+Name[en_IN]=bot.desktop
