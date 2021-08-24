@@ -229,6 +229,7 @@ void loop() {
       movement=1;
       bigdelay();
       delay(10000);
+      delay(10000);
       //bigdelay();
     }
     
