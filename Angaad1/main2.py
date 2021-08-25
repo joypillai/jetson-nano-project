@@ -92,8 +92,10 @@ def lock_on():
     count = 0
     myKit=ServoKit(channels=16)
     while (stop_arm == 0):
-        
-        
+         
+         if(stopBot==2):
+            break
+         
         print("lock on running")
         print(item,top,left,bottom,right)
 
@@ -396,13 +398,14 @@ if __name__=="__main__":
         if (stopBot == 1):
             #thread2.start()
             lock_on()
-            pick_up()
-            pick=1
-            #thread2.join()
-            controlSend = 1
-            sendY()
-            stopBot=0
-            time.sleep(0.05)
+            if(stopBot!=2):
+               pick_up()
+               pick=1
+               #thread2.join()
+               controlSend = 1
+               sendY()
+               stopBot=0
+               time.sleep(0.05)
         elif (stopBot == 2):
             servo_place()
             controlSend = 1
