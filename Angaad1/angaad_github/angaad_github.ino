@@ -19,6 +19,11 @@ const int d1 = 22; // Trigger Pin of left Ultrasonic Sensor
 const int d2 = 24; // Echo Pin of left Ultrasonic Sensor
 const int d3 = 26; // Trigger Pin of left Ultrasonic Sensor
 const int d4 = 28; // Echo Pin of left Ultrasonic Sensor
+//GPIO communication from Jetson Nano
+int sensorpin1 = A13;
+int sensorval1 = 0;
+int sensorpin2 = A14;
+int sensorval2 = 0;
 Servo myservo;  // create servo object to control a servo
 // twelve servo objects can be created on most boards
 
@@ -26,9 +31,11 @@ int pos = 0;    // variable to store the servo position
 int stopBot =0;
 int started =0;
 int movement=0;
+int count = 0;
 
 void setup() {
   myservo.attach(13);
+  myservo.write(55);
   //Motor Driver
   pinMode(2,OUTPUT);
   pinMode(3,OUTPUT);
@@ -62,6 +69,7 @@ void setup() {
   Serial.begin(9600);
 
   bigdelay();
+  bigdelay();
 }
 
 void loop() {
@@ -85,9 +93,9 @@ void loop() {
    //pinMode(echoPin, INPUT);
    duration = pulseIn(echoPin, HIGH);
    cm = microsecondsToCentimeters(duration);
-   //Serial.print(cm);
-   //Serial.print(" cm front");
-   //Serial.println();
+//   Serial.print(cm);
+//   Serial.print(" cm front");
+//   Serial.println();
 
    //pinMode(pingPin4, OUTPUT);
    digitalWrite(pingPin4, LOW);
@@ -158,40 +166,107 @@ void loop() {
 //     Serial.print(" cm left");
 //     Serial.print(" done");
 //     Serial.println();
-     
 
-  
-  if (started==0 && cm<40){
-
-    myservo.write(55);
-
-    
-      backward();
-      startmotor();
-      if(cm3>cm5){
-        fronttoright();
-        delay(15);
-        righttofront();
-      }
-      else if(cm5>cm3){
-        fronttoleft();
-        delay(15);
-        lefttofront();
-      }
-      else{
-        backward();  
-      }
-   
+  sensorval1 = analogRead(sensorpin1);
+  if(sensorval1 < 100){
+    sensorval1=0;
+  }
+  else{
+    sensorval1=1;
+  }
+  sensorval2 = analogRead(sensorpin2);
+  if(sensorval2 < 100){
+    sensorval2=0;
+  }
+  else{
+    sensorval2=1;
   }
 
-    if(cm>40 && started==0){
-      started=1;
-      stopmotor();
+  
+  if (stopBot!=2 && sensorval1 == 0){
+    stopmotor();
+    
+    if(stopBot==0){
+      stopBot=1;
     }
+    Serial.print(stopBot);
+    Serial.println();  
+    Serial.print(stopBot);
+    Serial.println();
+    delay(100);
+    Serial.print(stopBot);
+    Serial.println();  
+    Serial.print(stopBot);
+    Serial.println();
+    delay(100);
+    Serial.print(stopBot);
+    Serial.println();
+    Serial.print(stopBot);
+    Serial.println();
+    movement=1;
+    sensorval1 = analogRead(sensorpin1);
+    if(sensorval1<100){
+      sensorval1=0;
+      }
+    
+    else{
+      sensorval1=1;
+    }
+    while(sensorval1 == 0){
+      sensorval1 = analogRead(sensorpin1);
+      if(sensorval1<100){
+        sensorval1=0;
+        }
+      
+      else{
+        sensorval1=1;
+        stopBot=0;
+        Serial.print(stopBot);
+        Serial.println();  
+        Serial.print(stopBot);
+        Serial.println();
+      }
+      delay(50);
+    }
+    //bigdelay();
+    
+    serialFlush();
+  }
+
+  else if(sensorval2==0){
+    stopmotor();
+  }
+  
+  else if(stopBot==1){
+    stopmotor();
+    movement=1;
+    stopBot=0;
+  }
+  
+  else if(stopBot==2){
+    stopmotor();
+    count=60;
+    while(count!=0){
+      
+      Serial.print(stopBot);
+      Serial.println();  
+      Serial.print(stopBot);
+      Serial.println();
+      delay(500);
+      count--;
+    }
+    movement=0;
+    stopBot=0;
+    Serial.print(stopBot);
+    Serial.println();  
+    Serial.print(stopBot);
+    Serial.println();
+  }
+  
   
 
-  if(movement==0 && started==1){
-
+  else if(movement==0 && sensorval1 == 1){
+      
       myservo.write(55);
       if (cm<40 && (cm2-cm6)>30){
         stopmotor();
@@ -209,7 +284,11 @@ void loop() {
         stopmotor();
         righttofront();
       }
-      else if (cm2<20){
+      else if(cm<40){
+        stopmotor();
+        stopBot=1;
+      }
+      else if (cm2<10){
         backward();
         delay(1000);
         stopmotor();
@@ -218,7 +297,7 @@ void loop() {
         delay(1000);
         lefttofront();
       }
-      else if (cm6<20){
+      else if (cm6<10){
         backward();
         delay(1000);
         stopmotor();
@@ -227,18 +306,15 @@ void loop() {
         delay(1000);
         righttofront();
       }
-      else if(cm<40){
-        stopmotor();
-        stopBot=1;
-      }
-      else if(cm2>cm6){
+      
+      else if(cm2>(cm6+5)){
         forward();
         startmotor();
         fronttoright();
         delay(15);
         righttofront();
       }
-      else if(cm6>cm2){
+      else if(cm6>(cm2+5)){
         forward();
         startmotor();
         fronttoleft();
@@ -246,41 +322,22 @@ void loop() {
         lefttofront();
       }
       else{
+        startmotor();
         forward();
       }
     
-   
-
     
-    
-    if(stopBot==1){
-      Serial.print(stopBot);
-      Serial.println();  
-      Serial.print(stopBot);
-      Serial.println();
-      stopBot=0;
-      movement=1;
-      bigdelay();
-      delay(10000);
-      delay(10000);
-      //bigdelay();
+      if(stopBot==0){
+        stopBot=0;
+        Serial.print(stopBot);
+        Serial.println();  
+        Serial.print(stopBot);
+        Serial.println();      
     }
-    
-    else{
-      stopBot=0;
-      Serial.print(stopBot);
-      Serial.println();  
-      Serial.print(stopBot);
-      Serial.println();      
-    }
-     
-    
    serialFlush();
-  
-   
-    
+ 
   }
-  else if(movement==1 && started==1){
+  else if(movement==1 && sensorval1 == 1){
      myservo.write(55);
 
       if (cm4<40 && (cm3-cm5)>30){
@@ -299,7 +356,11 @@ void loop() {
         stopmotor();
         righttofront();
       }
-      else if (cm3<20){
+      else if(cm4<40){
+        stopmotor();
+        stopBot=2;
+      }
+      else if (cm3<10){
         forward();
         delay(1000);
         stopmotor();
@@ -308,7 +369,7 @@ void loop() {
         delay(1000);
         lefttofront();
       }
-      else if (cm5<20){
+      else if (cm5<10){
         forward();
         delay(1000);
         stopmotor();
@@ -318,18 +379,14 @@ void loop() {
         righttofront();
       }
       
-      else if(cm4<40){
-        stopmotor();
-        stopBot=2;
-      }
-      else if(cm3>cm5){
+      else if(cm3>(cm5+5)){
         backward();
         startmotor();
         fronttoright();
         delay(15);
         righttofront();
       }
-      else if(cm5>cm3){
+      else if(cm5>(cm3+5)){
         backward();
         startmotor();
         fronttoleft();
@@ -337,33 +394,24 @@ void loop() {
         lefttofront();
       }
       else{
+        startmotor();
         backward();  
       }
- 
-
-    if(stopBot==2){
-      Serial.print(stopBot);
-      Serial.println();
-      Serial.print(stopBot);
-      Serial.println();
-      movement=0;
-      stopBot=0;
-      bigdelay();
-      delay(5000); 
-    }
     
-    else{
-      stopBot=0;
-      Serial.print(stopBot);
-      Serial.println();  
-      Serial.print(stopBot);
-      Serial.println();      
-    }
-
+      if(stopBot==0){
+        stopBot=0;
+        Serial.print(stopBot);
+        Serial.println();  
+        Serial.print(stopBot);
+        Serial.println();      
+      }
+      
    serialFlush();
   }
 
 }
+
+//FUNCTIONS
 
 void bigdelay(){
   delay(10000);
@@ -386,10 +434,10 @@ void fronttoleft(){
     myservo.write(pos);
     delay(15);
   }
-  analogWrite(l1,50);
-  analogWrite(l2,50);
-  analogWrite(r1,100);
-  analogWrite(r2,100);
+  analogWrite(l1,40);
+  analogWrite(l2,40);
+  analogWrite(r1,80);
+  analogWrite(r2,80);
   
 }
 
@@ -398,10 +446,10 @@ void fronttoright(){
     myservo.write(pos);
     delay(15);
   }
-  analogWrite(l1,100);
-  analogWrite(l2,100);
-  analogWrite(r1,50);
-  analogWrite(r2,50);
+  analogWrite(l1,80);
+  analogWrite(l2,80);
+  analogWrite(r1,40);
+  analogWrite(r2,40);
 }
 
 void lefttofront(){
@@ -409,10 +457,10 @@ void lefttofront(){
     myservo.write(pos);
     delay(15);
   }
-  analogWrite(l1,100);
-  analogWrite(l2,100);
-  analogWrite(r1,100);
-  analogWrite(r2,100);
+  analogWrite(l1,80);
+  analogWrite(l2,80);
+  analogWrite(r1,80);
+  analogWrite(r2,80);
 }
 
 void righttofront(){
@@ -420,10 +468,10 @@ void righttofront(){
     myservo.write(pos);
     delay(15);
   }
-  analogWrite(l1,100);
-  analogWrite(l2,100);
-  analogWrite(r1,100);
-  analogWrite(r2,100);
+  analogWrite(l1,80);
+  analogWrite(l2,80);
+  analogWrite(r1,80);
+  analogWrite(r2,80);
 }
 
 void forward(){
@@ -448,8 +496,8 @@ void stopmotor(){
 }
 
 void startmotor(){
-  analogWrite(l1,100);
-  analogWrite(l2,100);
-  analogWrite(r1,100);
-  analogWrite(r2,100);
+  analogWrite(l1,80);
+  analogWrite(l2,80);
+  analogWrite(r1,80);
+  analogWrite(r2,80);
 }
